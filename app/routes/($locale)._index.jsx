@@ -1,156 +1,127 @@
-import {defer} from '@shopify/remix-oxygen';
-import {Await, useLoaderData, Link} from '@remix-run/react';
-import {Suspense} from 'react';
-import {Image, Money} from '@shopify/hydrogen';
+import {useLoaderData, Link} from '@remix-run/react';
+import {Image} from '@shopify/hydrogen';
+//Importing Featured Collections
+// import Swiper core and required modules
+import { useRef, useEffect } from 'react';
+import { register } from 'swiper/element/bundle';
 
-/**
- * @type {MetaFunction}
- */
-export const meta = () => {
-  return [{title: 'Hydrogen | Home'}];
-};
 
-/**
- * @param {LoaderFunctionArgs}
- */
+register();
+
+export function meta() {
+  return [
+    {title: 'Hydrogen'},
+    {description: 'A custom storefront powered by Hydrogen'},
+  ];
+}
+
 export async function loader({context}) {
-  const {storefront} = context;
-  const {collections} = await storefront.query(FEATURED_COLLECTION_QUERY);
-  const featuredCollection = collections.nodes[0];
-  const recommendedProducts = storefront.query(RECOMMENDED_PRODUCTS_QUERY);
-
-  return defer({featuredCollection, recommendedProducts});
+  return await context.storefront.query(COLLECTIONS_QUERY);
 }
 
-export default function Homepage() {
-  /** @type {LoaderReturnData} */
-  const data = useLoaderData();
-  return (
-    <div className="home">
-      <FeaturedCollection collection={data.featuredCollection} />
-      <RecommendedProducts products={data.recommendedProducts} />
-    </div>
-  );
-}
 
-/**
- * @param {{
- *   collection: FeaturedCollectionFragment;
- * }}
- */
-function FeaturedCollection({collection}) {
-  if (!collection) return null;
-  const image = collection?.image;
-  return (
-    <Link
-      className="featured-collection"
-      to={`/collections/${collection.handle}`}
-    >
-      {image && (
-        <div className="featured-collection-image">
-          <Image data={image} sizes="100vw" />
-        </div>
-      )}
-      <h1>{collection.title}</h1>
-    </Link>
-  );
-}
 
-/**
- * @param {{
- *   products: Promise<RecommendedProductsQuery>;
- * }}
- */
-function RecommendedProducts({products}) {
+export default function Index() {
+  const {collections} = useLoaderData();
+
+
+  //const swiperElRef = useRef(null);
+
+  // useEffect(() => {
+  //   // listen for Swiper events using addEventListener
+  //   swiperElRef.current.addEventListener('swiperprogress', (e) => {
+  //     const [swiper, progress] = e.detail;
+  //     console.log(progress);
+  //   });
+
+  //   swiperElRef.current.addEventListener('swiperslidechange', (e) => {
+  //     console.log('slide changed');
+  //   });
+
+
+  // }, []);
+  const swiperRef = useRef(null);
+
+  useEffect(() => {
+    const swiperContainer = swiperRef.current;
+    const params = {
+      navigation: true,
+      pagination: true,
+      loop: true,
+      // These are new...
+      injectStyles: [
+        `
+          .swiper-button-next,
+          .swiper-button-prev {
+           color:white;
+           width:20px;
+          }
+          .swiper-pagination-bullet{
+          }
+      `,
+      ],
+    };
+
+    Object.assign(swiperContainer, params);
+    swiperContainer.initialize();
+  }, []);
+  
   return (
-    <div className="recommended-products">
-      <h2>Recommended Products</h2>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Await resolve={products}>
-          {({products}) => (
-            <div className="recommended-products-grid">
-              {products.nodes.map((product) => (
-                <Link
-                  key={product.id}
-                  className="recommended-product"
-                  to={`/products/${product.handle}`}
-                >
-                  <Image
-                    data={product.images.nodes[0]}
-                    aspectRatio="1/1"
-                    sizes="(min-width: 45em) 20vw, 50vw"
+    <section className="BannerSection">
+      <div className="ImageBox">
+      <swiper-container ref={swiperRef} init="false">
+        {collections.nodes.map((collection) => {
+          return (
+           
+            <swiper-slide>
+            <Link to={`/collections/${collection.handle}`} key={collection.id}>
+              
+                {collection?.image && (
+                  <Image 
+                    alt={`Image of ${collection.title}`}
+                    data={collection.image}
+                    key={collection.id}
                   />
-                  <h4>{product.title}</h4>
-                  <small>
-                    <Money data={product.priceRange.minVariantPrice} />
-                  </small>
-                </Link>
-              ))}
-            </div>
-          )}
-        </Await>
-      </Suspense>
-      <br />
-    </div>
+                )}
+             
+            </Link>
+           </swiper-slide>
+         
+          );
+         
+        })}
+         </swiper-container>
+
+
+      </div> 
+
+
+ 
+
+
+    </section>
+
+  
   );
+
 }
 
-const FEATURED_COLLECTION_QUERY = `#graphql
-  fragment FeaturedCollection on Collection {
-    id
-    title
-    image {
-      id
-      url
-      altText
-      width
-      height
-    }
-    handle
-  }
-  query FeaturedCollection($country: CountryCode, $language: LanguageCode)
-    @inContext(country: $country, language: $language) {
-    collections(first: 1, sortKey: UPDATED_AT, reverse: true) {
-      nodes {
-        ...FeaturedCollection
-      }
-    }
-  }
-`;
 
-const RECOMMENDED_PRODUCTS_QUERY = `#graphql
-  fragment RecommendedProduct on Product {
-    id
-    title
-    handle
-    priceRange {
-      minVariantPrice {
-        amount
-        currencyCode
-      }
-    }
-    images(first: 1) {
+
+const COLLECTIONS_QUERY = `#graphql
+  query FeaturedCollections {
+    collections(first: 3, query: "collection_type:smart") {
       nodes {
         id
-        url
-        altText
-        width
-        height
-      }
-    }
-  }
-  query RecommendedProducts ($country: CountryCode, $language: LanguageCode)
-    @inContext(country: $country, language: $language) {
-    products(first: 4, sortKey: UPDATED_AT, reverse: true) {
-      nodes {
-        ...RecommendedProduct
+        handle
+        image {
+          altText
+          url
+        }
       }
     }
   }
 `;
 
-/** @typedef {import('@shopify/remix-oxygen').LoaderFunctionArgs} LoaderFunctionArgs */
-/** @template T @typedef {import('@remix-run/react').MetaFunction<T>} MetaFunction */
-/** @typedef {import('storefrontapi.generated').FeaturedCollectionFragment} FeaturedCollectionFragment */
-/** @typedef {import('storefrontapi.generated').RecommendedProductsQuery} RecommendedProductsQuery */
-/** @typedef {import('@shopify/remix-oxygen').SerializeFrom<typeof loader>} LoaderReturnData */
+
+

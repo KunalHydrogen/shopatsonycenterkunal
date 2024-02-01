@@ -471,3 +471,10 @@ aside li {
 .account-logout {
   display: inline-block;
 }
+
+/*Custom Css*/
+.grid-Flex-box{
+  display:flex;
+  gap: 2%;
+}
+
