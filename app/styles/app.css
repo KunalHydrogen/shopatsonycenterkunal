@@ -478,3 +478,45 @@ aside li {
   gap: 2%;
 }
 
+.Wrapper_Product{
+  display:flex;
+  gap:1%;
+  margin-top:5%;
+}
+.Inner_Product_div{
+  width:100%;
+  display:block;  
+  text-align:center;
+}
+.price_Mrp{
+  width:60%;
+  margin:0 auto;
+  display:flex;
+  justify-content: space-between;
+}
+.MRP{
+  text-decoration: line-through;
+}
+.Price{
+  font-size: 20px;
+  font-weight: 500;
+  font-weight: 600;
+  color:#c1382a;
+}
+.Addtocart{
+  text-decoration: none;
+}
+.InnerValue{
+  color:#c1382a;
+}
+.Addtocart{
+  width: 50%;
+  background-color:#c1382a;
+  margin:0 auto;
+  padding:2%;
+  border-radius: 3%;
+  margin-top: 4%;
+}
+.Addtocart a{
+  color:white;
+}

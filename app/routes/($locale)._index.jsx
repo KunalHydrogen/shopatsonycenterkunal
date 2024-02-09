@@ -4,6 +4,8 @@ import {Image} from '@shopify/hydrogen';
 // import Swiper core and required modules
 import { useRef, useEffect } from 'react';
 import { register } from 'swiper/element/bundle';
+import { Sony_data } from "~/Products.js";
+
 
 
 register();
@@ -18,6 +20,37 @@ export function meta() {
 export async function loader({context}) {
   return await context.storefront.query(COLLECTIONS_QUERY);
 }
+
+
+
+
+ function Products({title, price, MRP, YouSave, button, images, link}){
+    return(
+        <div className="Inner_Product_div">
+             <img src={images} alt={title} />
+            <p>{title}</p>
+            <div className="price_Mrp">
+            <span className="Price">{price}</span>
+            <span className="MRP">MRP {MRP}</span>
+            </div>
+            <span className="YouSave">You Save:<span className="InnerValue">{YouSave}</span></span>
+            <div className="Addtocart">
+            <a  onClick={{link}}>Add to Cart</a>
+            </div>
+        </div>
+    );
+}
+
+
+const ProductList = ({ data }) => {
+  return (
+    <div className="Wrapper_Product">
+      {data.map((product, index) => (
+        <Products key={index} {...product} />
+      ))}
+    </div>
+  );
+};
 
 
 
@@ -95,9 +128,11 @@ export default function Index() {
 
       </div> 
 
-
+<div>
  
-
+</div>
+ 
+<ProductList data={Sony_data} />
 
     </section>
 
